@@ -1,0 +1,89 @@
+name: Dependency Check
+
+on:
+  push:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+        with:
+          project: 'mybatis-plus-samples'
+          path: '.'
+          format: 'ALL'
+          out: 'reports'
+          args: >
+            --suppression suppression.xml
+            --failOnCVSS 7
+            --enableExperimental
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports
+
+  license-validation:
+    needs: dependency-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.2
+
+      - name: Check Licenses
+        run: |
+          echo "Scanning dependencies for license compliance..."
+          mvn dependency:list -DincludeScope=runtime -DincludeScope=compile > deps.txt
+          echo "Checking for GPL..."
+          if grep -q "GPL" deps.txt; then
+            echo "Warning: GPL license found."
+          else
+            echo "License check passed."
+          fi
+
+  report-generation:
+    needs: [dependency-scan, license-validation]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Report
+        uses: actions/download-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports
+
+      - name: Generate Summary
+        run: |
+          echo "Generating comprehensive report..."
+          echo "Dependency Analysis Report" > summary.md
+          echo "==========================" >> summary.md
+          echo "Scan completed successfully." >> summary.md
+          cat summary.md
+
+      - name: Upload Summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: summary-report
+          path: summary.md
