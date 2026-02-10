@@ -1,0 +1,42 @@
+{
+  "repository": "baomidou/mybatis-plus-samples",
+  "analysis_date": "2026-02-10",
+  "dependencies": {
+    "managed": [
+       {"groupId": "com.alibaba", "artifactId": "fastjson", "version": "1.2.76", "status": "Vulnerable"},
+       {"groupId": "mysql", "artifactId": "mysql-connector-java", "version": "8.0.26", "status": "Vulnerable"},
+       {"groupId": "p6spy", "artifactId": "p6spy", "version": "3.9.1", "status": "Check"},
+       {"groupId": "com.baomidou", "artifactId": "mybatis-plus", "version": "3.5.16", "status": "Safe"}
+    ],
+    "modules_summary": {
+       "mybatis-plus-sample-pagination": {
+          "conflicts": [
+             {"groupId": "com.alibaba", "artifactId": "fastjson", "version": "1.2.49", "scope": "test", "status": "Conflict with Managed 1.2.76"}
+          ]
+       },
+       "mybatis-plus-sample-mysql": {
+          "dependencies": [
+             {"groupId": "mysql", "artifactId": "mysql-connector-java", "scope": "runtime", "version": "Managed (8.0.26)"}
+          ]
+       }
+    }
+  },
+  "vulnerabilities": [
+    {
+      "id": "CVE-2022-25845",
+      "library": "fastjson",
+      "severity": "High",
+      "score": 8.1,
+      "affected_versions": ["1.2.76", "1.2.49"],
+      "fix_version": "1.2.83"
+    },
+    {
+      "id": "CVE-2022-21363",
+      "library": "mysql-connector-java",
+      "severity": "High",
+      "score": 7.5,
+      "affected_versions": ["8.0.26"],
+      "fix_version": "8.0.28"
+    }
+  ]
+}
